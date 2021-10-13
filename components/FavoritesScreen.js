@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
-import { ScrollView, Text, View } from "react-native";
+import { Platform, ScrollView, Text, TextInput, View } from "react-native";
 
 import EpisodeBlock from "./EpisodeBlock";
 import Footer from "./Footer";
@@ -8,6 +8,16 @@ import Footer from "./Footer";
 import { styles } from "../styles/styles";
 
 const FavoritesScreen = ({ navigation, route }) => {
+  const [searchText, onChangeText] = useState(null);
+
+  // useEffect(() => {
+  //   navigation.setOptions({
+  //     searchBar: {
+  //       onChangeText: (event) => onChangeText(event.nativeEvent.text),
+  //     },
+  //   });
+  // }, [navigation]);
+
   return (
     <View style={{ flex: 1 }}>
       <View style={{ flex: 1 }}>
@@ -20,28 +30,59 @@ const FavoritesScreen = ({ navigation, route }) => {
         ) : (
           <ScrollView>
             <View style={styles.primaryView}>
-              {route.params.favorites.map((episode) => (
-                <View key={episode.code}>
-                  <EpisodeBlock
-                    showname={route.params.filename}
-                    episode={episode}
-                    seasonHeaderCallback={(episode) => {
-                      const favorites = route.params.favorites;
-                      for (let i = 0; i < favorites.length; i++) {
-                        if (i == 0 && episode.code == favorites[0].code) {
+              <TextInput
+                style={styles.textInput}
+                onChangeText={onChangeText}
+                placeholder="Search for an episode"
+                clearButtonMode="always"
+              />
+            </View>
+
+            <View
+              style={{
+                ...Platform.select({
+                  ios: { ...styles.primaryView, paddingTop: 0 },
+                  default: styles.primaryView,
+                }),
+              }}
+            >
+              {route.params.favorites
+                .sort((lhs, rhs) => {
+                  return lhs.code > rhs.code;
+                })
+                .filter((episode) => {
+                  const text =
+                    searchText == null ? "" : searchText.toLowerCase();
+                  const keywords = episode.keywords ? episode.keywords : "None";
+
+                  const nameKeywords = [
+                    episode.name,
+                    ...keywords
+                      .split(",")
+                      .map((word) => word.trim())
+                      .filter((word) => word !== "None"),
+                  ].map((term) => term.toLowerCase());
+                  return (
+                    text == "" ||
+                    nameKeywords.some((term) => term.includes(text))
+                  );
+                })
+                .map((episode, idx, arr) => (
+                  <View key={episode.code}>
+                    <EpisodeBlock
+                      showname={route.params.filename}
+                      episode={episode}
+                      seasonHeaderCallback={(episode) => {
+                        if (idx == 0) {
+                          // first element
                           return true;
-                        } else if (i == 0) {
-                          continue;
                         }
-                        return (
-                          favorites[i - 1].seasonNumber < episode.seasonNumber
-                        );
-                      }
-                    }}
-                    canFavorite={false}
-                  />
-                </View>
-              ))}
+                        return episode.seasonNumber > arr[idx - 1].seasonNumber;
+                      }}
+                      canFavorite={false}
+                    />
+                  </View>
+                ))}
             </View>
           </ScrollView>
         )}

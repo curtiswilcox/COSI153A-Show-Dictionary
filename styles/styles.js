@@ -28,6 +28,7 @@ const styles = StyleSheet.create({
   episodeBlockMiddle: {
     borderColor: "grey",
     borderWidth: 1,
+    borderRadius: 10,
   },
 
   episodeBlockOuter: {
@@ -87,14 +88,10 @@ const styles = StyleSheet.create({
     resizeMode: "stretch",
     ...Platform.select({
       ios: {
-        // height: 135,
-        // width: 135,
         height: Dimensions.get("window").width / 2.75,
         width: Dimensions.get("window").width / 2.75,
       },
       default: {
-        // height: 175,
-        // width: 175,
         height: Dimensions.get("window").width / 8.5,
         width: Dimensions.get("window").width / 8.5,
       },

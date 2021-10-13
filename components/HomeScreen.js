@@ -68,6 +68,7 @@ const HomeScreen = ({ navigation }) => {
               style={styles.textInput}
               onChangeText={onChangeText}
               placeholder="Enter show name"
+              clearButtonMode="always"
             />
           </View>
           <View style={styles.grid}>

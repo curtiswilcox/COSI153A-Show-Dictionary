@@ -2,6 +2,8 @@
 
 import React from "react";
 
+import { Platform } from "react-native";
+
 import HomeScreen from "./components/HomeScreen";
 import ShowInfoScreen from "./components/ShowInfoScreen";
 import AboutScreen from "./components/AboutScreen";
@@ -37,20 +39,54 @@ const ShowDictionaryApp = () => {
 
   return (
     <NavigationContainer>
-      {/* linking={linking} fallback={<Text>Loading...</Text>}*/}
+      {/* linking={linking} fallback={<Text>Loading...</Text>} */}
       <Stack.Navigator>
-        <Stack.Screen name="Show Dictionary" component={HomeScreen} />
+        <Stack.Screen
+          name="Show Dictionary"
+          component={HomeScreen}
+          options={{
+            ...Platform.select({
+              ios: {
+                headerLargeTitle: true,
+              },
+            }),
+          }}
+        />
         <Stack.Screen
           name="ShowInfo"
           component={ShowInfoScreen}
-          options={({ route }) => ({ title: route.params.show.name })}
+          options={({ route }) => ({
+            title: route.params.show.name,
+            headerBackTitle: 'Home',
+            ...Platform.select({
+              ios: {
+                headerLargeTitle: true,
+              },
+            }),
+          })}
         />
-        <Stack.Screen name="About" component={AboutScreen} />
+        <Stack.Screen
+          name="About"
+          component={AboutScreen}
+          options={{
+            headerBackTitle: 'Home',
+            ...Platform.select({
+              ios: {
+                headerLargeTitle: true,
+              },
+            }),
+          }}
+        />
         <Stack.Screen
           name="Favorites"
           component={FavoritesScreen}
           options={({ route }) => ({
-            title: `${route.params.showname} Favorites`,
+            title: `Favorite Episodes from ${route.params.showname}`,
+            ...Platform.select({
+              ios: {
+                headerLargeTitle: true,
+              },
+            }),
           })}
         />
       </Stack.Navigator>

@@ -4,9 +4,10 @@ import {
   ActivityIndicator,
   Button,
   Image,
-  // SafeAreaView,
+  Platform,
   ScrollView,
   Text,
+  TextInput,
   View,
 } from "react-native";
 
@@ -20,6 +21,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const ShowInfoScreen = ({ navigation, route }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchText, onChangeText] = useState(null);
 
   useEffect(() => {
     navigation.setOptions({
@@ -60,7 +62,7 @@ const ShowInfoScreen = ({ navigation, route }) => {
               isFavorite !== null ? JSON.parse(isFavorite) : false;
           } catch (e) {
             episode.isFavorite = false;
-            console.log(`getData error: ${e}`)
+            console.log(`getData error: ${e}`);
           }
         });
 
@@ -106,30 +108,68 @@ const ShowInfoScreen = ({ navigation, route }) => {
       <View style={{ flex: 1 }}>
         <ScrollView>
           <View style={styles.primaryView}>
+            <TextInput
+              style={styles.textInput}
+              onChangeText={onChangeText}
+              placeholder="Search for an episode"
+              clearButtonMode="always"
+            />
+          </View>
+          <View
+            style={{
+              ...Platform.select({
+                ios: { ...styles.primaryView, paddingTop: 0 },
+                default: styles.primaryView,
+              }),
+            }}
+          >
             <View style={styles.info}>
               <Image
                 style={styles.showIcon}
-                source={{
-                  uri: route.params.show.url,
-                }}
+                source={{ uri: route.params.show.url }}
               />
               <Text style={styles.textShowDescription}>
                 {route.params.show.description}
               </Text>
             </View>
             <View>
-              {data.map((episode) => (
-                <View key={episode.code}>
-                  <EpisodeBlock
-                    showname={route.params.show.filename}
-                    episode={episode}
-                    seasonHeaderCallback={(episode) =>
-                      episode.episodeInSeason == 1
-                    }
-                    canFavorite={true}
-                  />
-                </View>
-              ))}
+              {data
+                .sort((lhs, rhs) => {
+                  return lhs.code > rhs.code;
+                })
+                .filter((episode) => {
+                  const text =
+                    searchText == null ? "" : searchText.toLowerCase();
+                  const keywords = episode.keywords ? episode.keywords : "None";
+
+                  const nameKeywords = [
+                    episode.name,
+                    ...keywords
+                      .split(",")
+                      .map((word) => word.trim())
+                      .filter((word) => word !== "None"),
+                  ].map((term) => term.toLowerCase());
+                  return (
+                    text == "" ||
+                    nameKeywords.some((term) => term.includes(text))
+                  );
+                })
+                .map((episode, idx, arr) => (
+                  <View key={episode.code}>
+                    <EpisodeBlock
+                      showname={route.params.show.filename}
+                      episode={episode}
+                      seasonHeaderCallback={(episode) => {
+                        if (idx == 0) {
+                          // first element
+                          return true;
+                        }
+                        return episode.seasonNumber > arr[idx - 1].seasonNumber;
+                      }}
+                      canFavorite={true}
+                    />
+                  </View>
+                ))}
             </View>
           </View>
         </ScrollView>

@@ -8,12 +8,12 @@ import { styles } from "../styles/styles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { format } from "date-fns";
-import { esLocale } from "date-fns/locale/es";
-
-const dateLocals = {
-  "en-US": "MMMM do, yyyy",
-  es: "do 'de' MMMM yyyy",
-};
+// import { esLocale } from "date-fns/locale/es";
+//
+// const dateLocals = {
+//   "en-US": "MMMM do, yyyy",
+//   es: "do 'de' MMMM yyyy",
+// };
 
 const EpisodeView = ({
   showname,
@@ -59,7 +59,7 @@ const EpisodeView = ({
           <View
             style={{
               flexDirection: "row",
-              paddingHorizontal: 15,
+              // paddingHorizontal: 0,
               paddingBottom: 10,
               justifyContent: "space-between",
             }}
@@ -72,19 +72,14 @@ const EpisodeView = ({
               {episode.name}
             </Text>
           </View>
-          <View style={{ alignSelf: "center", padding: 10 }}>
+          <View style={{ alignSelf: "center", paddingVertical: 10, paddingHorizontal: '2%' }}>
+            {episode.writer && (
+              <Text style={{ fontSize: 17, textAlign: "center" }}>
+                {episode.writer}
+              </Text>
+            )}
             <Text style={{ fontSize: 17, textAlign: "center" }}>
-              {episode.writer}
-            </Text>
-            <Text style={{ fontSize: 17, textAlign: "center" }}>
-              {format(
-                new Date(episode.airdate),
-                dateLocals[
-                  "en-US"
-                ] /*, {
-                locale: esLocale,
-              }*/
-              )}
+              {format(new Date(episode.airdate), "MMMM do, yyyy")}
             </Text>
           </View>
           <View>
