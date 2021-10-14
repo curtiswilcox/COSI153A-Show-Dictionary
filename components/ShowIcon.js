@@ -10,14 +10,14 @@ import {
 
 import { styles } from "../styles/styles";
 
-const ShowIcon = ({ show, callback }) => {
+const ShowIcon = ({ show, callback, canPress }) => {
   const [loading, setLoading] = useState(true);
 
   return (
     <Pressable
-      accessibilityRole="button"
+      accessibilityRole={canPress ? "button" : "none"}
       onPress={callback}
-      style={styles.showIconHighlight}
+      style={styles.showIcon}
     >
       <Image
         style={styles.showIcon}

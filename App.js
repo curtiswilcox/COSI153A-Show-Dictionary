@@ -81,7 +81,7 @@ const ShowDictionaryApp = () => {
           name="Favorites"
           component={FavoritesScreen}
           options={({ route }) => ({
-            title: `Favorite Episodes from ${route.params.showname}`,
+            title: `Favorite Episodes from ${route.params.show.name}`,
             ...Platform.select({
               ios: {
                 headerLargeTitle: true,

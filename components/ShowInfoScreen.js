@@ -4,7 +4,9 @@ import {
   ActivityIndicator,
   Button,
   Image,
+  LayoutAnimation,
   Platform,
+  Pressable,
   ScrollView,
   SectionList,
   Text,
@@ -14,6 +16,7 @@ import {
 
 import EpisodeBlock from "./EpisodeBlock";
 import Footer from "./Footer";
+import ShowIcon from "./ShowIcon";
 
 import { styles } from "../styles/styles";
 
@@ -24,6 +27,7 @@ const ShowInfoScreen = ({ navigation, route }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchText, onChangeText] = useState(null);
+  // const [showingSeasons, setShowingSeasons] = useState([]);
 
   useEffect(() => {
     navigation.setOptions({
@@ -32,8 +36,7 @@ const ShowInfoScreen = ({ navigation, route }) => {
           <Button
             onPress={() =>
               navigation.navigate("Favorites", {
-                showname: route.params.show.name,
-                filename: route.params.show.filename,
+                show: route.params.show,
                 favorites: splitBySeasons(
                   originalData.filter((episode) => episode.isFavorite)
                 ),
@@ -49,18 +52,13 @@ const ShowInfoScreen = ({ navigation, route }) => {
   useEffect(() => {
     const filteredSplit = splitBySeasons(
       originalData.filter((episode) => {
-        const text = searchText == null ? "" : searchText.toLowerCase();
-        const keywords = episode.keywords ? episode.keywords : "None";
+        if (!searchText) {
+          return true;
+        }
 
-        const nameKeywords = [
-          episode.name,
-          episode.summary,
-          ...keywords
-            .split(",")
-            .map((word) => word.trim())
-            .filter((word) => word !== "None"),
-        ].map((term) => term.toLowerCase());
-        return text == "" || nameKeywords.some((term) => term.includes(text));
+        return episode.filterTerms.some((term) =>
+          term.includes(searchText.toLowerCase())
+        );
       })
     );
     setData(filteredSplit);
@@ -68,10 +66,20 @@ const ShowInfoScreen = ({ navigation, route }) => {
 
   useEffect(() => {
     async function dealWithData() {
-      const data = await getData();
-      const seasonSplitData = splitBySeasons(data);
-      setOriginalData(data);
+      const originalData = await getData();
+      const seasonSplitData = splitBySeasons(originalData);
+      setOriginalData(originalData);
       setData(seasonSplitData);
+      // setShowingSeasons(
+      //   [...new Set(originalData.map((episode) => episode.seasonNumber))].map(
+      //     (seasonNumber) => {
+      //       return {
+      //         number: seasonNumber,
+      //         showing: true,
+      //       };
+      //     }
+      //   )
+      // );
       setLoading(false);
     }
     dealWithData();
@@ -85,6 +93,23 @@ const ShowInfoScreen = ({ navigation, route }) => {
       );
 
       const data = await response.json();
+
+      data.forEach((episode) => {
+        episode.keywords = episode.keywords
+          ? episode.keywords
+              .split(",")
+              .map((word) => word.trim())
+              .filter((word) => word !== "None")
+          : [];
+      });
+
+      data.forEach((episode) => {
+        episode.filterTerms = [
+          episode.name,
+          episode.summary,
+          ...episode.keywords,
+        ].map((term) => term.toLowerCase());
+      });
 
       await Promise.all(
         data.map(async (episode) => {
@@ -101,6 +126,7 @@ const ShowInfoScreen = ({ navigation, route }) => {
           }
         })
       );
+      data.sort((lhs, rhs) => parseInt(lhs.code) > parseInt(rhs.code));
       return data;
     } catch (err) {
       console.log(err);
@@ -110,7 +136,7 @@ const ShowInfoScreen = ({ navigation, route }) => {
 
   const splitBySeasons = (data) => {
     const seasonNumbers = [
-      ...new Set(data.map((episode) => episode.seasonNumber)),
+      ...new Set(data.map((episode) => parseInt(episode.seasonNumber))),
     ].sort();
 
     let seasonSectionStructure = [];
@@ -118,12 +144,16 @@ const ShowInfoScreen = ({ navigation, route }) => {
     seasonNumbers.forEach((season) => {
       const episodesInSeason = data
         .filter((episode) => episode.seasonNumber == season)
-        .sort((lhs, rhs) => lhs.code > rhs.code);
+        .sort((lhs, rhs) => parseInt(lhs.code) > parseInt(rhs.code));
       seasonSectionStructure.push({
-        title: `Season ${season}`,
+        title: season,
         data: episodesInSeason,
       });
     });
+    seasonSectionStructure.sort(
+      (lhs, rhs) =>
+        parseInt(lhs.data[0].seasonNumber) > parseInt(rhs.data[0].seasonNumber)
+    );
     return seasonSectionStructure;
   };
 
@@ -192,50 +222,96 @@ const ShowInfoScreen = ({ navigation, route }) => {
   ) : (
     <View style={{ flex: 1 }}>
       <View style={{ flex: 1 }}>
-        <ScrollView>
-          <View style={styles.primaryView}>
-            <TextInput
-              style={styles.textInput}
-              onChangeText={onChangeText}
-              placeholder="Search for an episode"
-              clearButtonMode="always"
-            />
-          </View>
-          <View
-            style={{
-              ...Platform.select({
-                ios: { ...styles.primaryView, paddingTop: 0 },
-                default: styles.primaryView,
-              }),
-            }}
-          >
-            <View style={styles.info}>
-              <Image
-                style={styles.showIcon}
-                source={{ uri: route.params.show.url }}
+        <SectionList
+          sections={data}
+          keyExtractor={(item, index) => item + index}
+          stickySectionHeadersEnabled={false}
+          renderItem={
+            ({ item }) => (
+              // <View style={showingSeasons[item.seasonNumber - 1].showing && {height: 'auto'}}>
+              <EpisodeBlock
+                showname={route.params.show.filename}
+                episode={item}
+                canFavorite={true}
               />
-              <Text style={styles.textShowDescription}>
-                {route.params.show.description}
-              </Text>
-            </View>
-            <View>
-              <SectionList
-                sections={data}
-                keyExtractor={(item, index) => item + index}
-                renderItem={({ item }) => (
-                  <EpisodeBlock
-                    showname={route.params.show.filename}
-                    episode={item}
-                    canFavorite={true}
+              // </View>
+            )
+            // ) : null;
+          }
+          renderSectionHeader={({ section: { title } }) => {
+            const seasonType = route.params.show.typeOfSeasons;
+            let seasonHeader =
+              seasonType.charAt(0).toUpperCase() + seasonType.slice(1);
+            seasonHeader += ` ${title}`;
+            const seasonTitles = route.params.show.seasonTitles;
+            const seasonTitle = seasonTitles
+              ? seasonTitles[title]
+                ? seasonTitles[title]
+                : ""
+              : null;
+            if (seasonTitle) {
+              seasonHeader += `: ${seasonTitle}`;
+            }
+            return (
+
+                <Text style={styles.seasonHeader}>{seasonHeader}</Text>
+
+            );
+          }}
+          ListEmptyComponent={
+            <Text
+              style={{
+                justifyContent: "space-around",
+                fontSize: 28,
+                fontWeight: "bold",
+                textAlign: "center",
+                paddingTop: 20,
+              }}
+            >
+              {searchText
+                ? "There are no episodes that match the inputted search text."
+                : "There are no episodes to see."}
+            </Text>
+          }
+          ListHeaderComponent={
+            <>
+              <View style={styles.primaryView}>
+                <TextInput
+                  style={styles.textInput}
+                  onChangeText={onChangeText}
+                  placeholder="Search for an episode"
+                  clearButtonMode="always"
+                />
+              </View>
+              <View
+                style={{
+                  ...Platform.select({
+                    ios: {
+                      ...styles.primaryView,
+                      paddingTop: 0,
+                      paddingHorizontal: "1%",
+                    },
+                    default: {
+                      ...styles.primaryView,
+                      paddingHorizontal: "19%",
+                    },
+                  }),
+                }}
+              >
+                <View style={styles.info}>
+                  <ShowIcon
+                    show={route.params.show}
+                    callback={() => {}}
+                    canPress={false}
                   />
-                )}
-                renderSectionHeader={({ section: { title } }) => (
-                  <Text style={styles.seasonHeader}>{title}</Text>
-                )}
-              />
-            </View>
-          </View>
-        </ScrollView>
+                  <Text style={styles.textShowDescription}>
+                    {route.params.show.description}
+                  </Text>
+                </View>
+              </View>
+            </>
+          }
+        />
       </View>
       <Footer />
     </View>
@@ -243,3 +319,28 @@ const ShowInfoScreen = ({ navigation, route }) => {
 };
 
 export default ShowInfoScreen;
+
+/*<Pressable
+  onPress={() => {
+    LayoutAnimation.configureNext(
+      LayoutAnimation.Presets.easeInEaseOut
+    );
+    setShowingSeasons((current) => {
+      current.forEach((season) => {
+        if (season.number == title.split(" ")[1]) {
+          season.showing = !season.showing;
+        }
+      });
+      return current;
+    });
+  }}
+>
+<Text
+  style={[
+    styles.seasonHeader,
+    { accessibilityRole: "button" },
+  ]}
+>
+  {title}
+</Text>
+</Pressable>*/

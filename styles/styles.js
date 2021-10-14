@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     ...Platform.select({
       ios: {
-        paddingHorizontal: "2%",
+        paddingHorizontal: "4%",
       },
       default: {
         paddingHorizontal: "20%",
@@ -67,18 +67,26 @@ const styles = StyleSheet.create({
   },
 
   primaryView: {
-    padding: 20,
     justifyContent: "space-between",
+    ...Platform.select({
+      ios: {
+        paddingHorizontal: "2%",
+        paddingVertical: 20,
+      },
+      default: {
+        padding: 20,
+      },
+    }),
   },
 
   seasonHeader: {
     fontSize: 28,
-    paddingTop: 20,
-    paddingBottom: 5,
+    paddingTop: 10,
+    paddingBottom: 10,
     fontWeight: "bold",
     ...Platform.select({
       ios: {
-        paddingLeft: "2%",
+        paddingLeft: "5%",
       },
       default: {
         paddingLeft: "20%",
@@ -86,20 +94,14 @@ const styles = StyleSheet.create({
     }),
   },
 
-  showIconHighlight: {
+  showIcon: {
     alignItems: "center",
     backgroundColor: "white",
     borderRadius: 20,
+    borderWidth: 1,
     justifyContent: "center",
     shadowColor: "gray",
     shadowRadius: 20,
-  },
-
-  showIcon: {
-    backgroundColor: "white",
-    borderRadius: 20,
-    borderWidth: 1,
-    shadowColor: "gray",
     resizeMode: "stretch",
     ...Platform.select({
       ios: {
@@ -115,9 +117,10 @@ const styles = StyleSheet.create({
 
   textInput: {
     backgroundColor: "white",
+    borderRadius: 20,
     height: 50,
     paddingHorizontal: 20,
-    borderRadius: 20,
+    // width: Dimensions.get("window").width - 60
   },
 
   textShowDescription: {
