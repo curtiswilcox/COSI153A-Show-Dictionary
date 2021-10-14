@@ -6,6 +6,7 @@ import {
   Image,
   Platform,
   ScrollView,
+  SectionList,
   Text,
   TextInput,
   View,
@@ -19,6 +20,7 @@ import { styles } from "../styles/styles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ShowInfoScreen = ({ navigation, route }) => {
+  const [originalData, setOriginalData] = useState([]);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchText, onChangeText] = useState(null);
@@ -32,7 +34,9 @@ const ShowInfoScreen = ({ navigation, route }) => {
               navigation.navigate("Favorites", {
                 showname: route.params.show.name,
                 filename: route.params.show.filename,
-                favorites: data.filter((episode) => episode.isFavorite),
+                favorites: splitBySeasons(
+                  originalData.filter((episode) => episode.isFavorite)
+                ),
               })
             }
             title="Favorites"
@@ -40,8 +44,90 @@ const ShowInfoScreen = ({ navigation, route }) => {
         </View>
       ),
     });
-  });
+  }, [data]);
 
+  useEffect(() => {
+    const filteredSplit = splitBySeasons(
+      originalData.filter((episode) => {
+        const text = searchText == null ? "" : searchText.toLowerCase();
+        const keywords = episode.keywords ? episode.keywords : "None";
+
+        const nameKeywords = [
+          episode.name,
+          episode.summary,
+          ...keywords
+            .split(",")
+            .map((word) => word.trim())
+            .filter((word) => word !== "None"),
+        ].map((term) => term.toLowerCase());
+        return text == "" || nameKeywords.some((term) => term.includes(text));
+      })
+    );
+    setData(filteredSplit);
+  }, [searchText]);
+
+  useEffect(() => {
+    async function dealWithData() {
+      const data = await getData();
+      const seasonSplitData = splitBySeasons(data);
+      setOriginalData(data);
+      setData(seasonSplitData);
+      setLoading(false);
+    }
+    dealWithData();
+  }, []);
+
+  const getData = async () => {
+    try {
+      const filename = route.params.show.filename;
+      const response = await fetch(
+        `https://www.cs.brandeis.edu/~curtiswilcox/show-dictionary/${filename}.json`
+      );
+
+      const data = await response.json();
+
+      await Promise.all(
+        data.map(async (episode) => {
+          episode.isFavorite = false;
+          try {
+            const isFavorite = await AsyncStorage.getItem(
+              `@${filename}-${episode.code}`
+            );
+            episode.isFavorite =
+              isFavorite !== null ? JSON.parse(isFavorite) : false;
+          } catch (e) {
+            episode.isFavorite = false;
+            console.log(`getData error: ${e}`);
+          }
+        })
+      );
+      return data;
+    } catch (err) {
+      console.log(err);
+      return [];
+    }
+  };
+
+  const splitBySeasons = (data) => {
+    const seasonNumbers = [
+      ...new Set(data.map((episode) => episode.seasonNumber)),
+    ].sort();
+
+    let seasonSectionStructure = [];
+
+    seasonNumbers.forEach((season) => {
+      const episodesInSeason = data
+        .filter((episode) => episode.seasonNumber == season)
+        .sort((lhs, rhs) => lhs.code > rhs.code);
+      seasonSectionStructure.push({
+        title: `Season ${season}`,
+        data: episodesInSeason,
+      });
+    });
+    return seasonSectionStructure;
+  };
+
+  /*
   useEffect(() => {
     async function getData() {
       try {
@@ -98,7 +184,7 @@ const ShowInfoScreen = ({ navigation, route }) => {
     // return willFocusSubscription;
     getData();
   }, []);
-
+*/
   return loading ? (
     <View style={{ flex: 1, alignContent: "center", justifyContent: "center" }}>
       <ActivityIndicator size="large" style={{ flex: 1 }} />
@@ -133,43 +219,20 @@ const ShowInfoScreen = ({ navigation, route }) => {
               </Text>
             </View>
             <View>
-              {data
-                .sort((lhs, rhs) => {
-                  return lhs.code > rhs.code;
-                })
-                .filter((episode) => {
-                  const text =
-                    searchText == null ? "" : searchText.toLowerCase();
-                  const keywords = episode.keywords ? episode.keywords : "None";
-
-                  const nameKeywords = [
-                    episode.name,
-                    ...keywords
-                      .split(",")
-                      .map((word) => word.trim())
-                      .filter((word) => word !== "None"),
-                  ].map((term) => term.toLowerCase());
-                  return (
-                    text == "" ||
-                    nameKeywords.some((term) => term.includes(text))
-                  );
-                })
-                .map((episode, idx, arr) => (
-                  <View key={episode.code}>
-                    <EpisodeBlock
-                      showname={route.params.show.filename}
-                      episode={episode}
-                      seasonHeaderCallback={(episode) => {
-                        if (idx == 0) {
-                          // first element
-                          return true;
-                        }
-                        return episode.seasonNumber > arr[idx - 1].seasonNumber;
-                      }}
-                      canFavorite={true}
-                    />
-                  </View>
-                ))}
+              <SectionList
+                sections={data}
+                keyExtractor={(item, index) => item + index}
+                renderItem={({ item }) => (
+                  <EpisodeBlock
+                    showname={route.params.show.filename}
+                    episode={item}
+                    canFavorite={true}
+                  />
+                )}
+                renderSectionHeader={({ section: { title } }) => (
+                  <Text style={styles.seasonHeader}>{title}</Text>
+                )}
+              />
             </View>
           </View>
         </ScrollView>

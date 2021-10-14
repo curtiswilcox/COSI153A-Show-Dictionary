@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from "react";
 
-import { Platform, ScrollView, Text, TextInput, View } from "react-native";
+import {
+  SectionList,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 import EpisodeBlock from "./EpisodeBlock";
 import Footer from "./Footer";
@@ -46,7 +53,21 @@ const FavoritesScreen = ({ navigation, route }) => {
                 }),
               }}
             >
-              {route.params.favorites
+              <SectionList
+                sections={route.params.favorites}
+                keyExtractor={(item, index) => item + index}
+                renderItem={({ item }) => (
+                  <EpisodeBlock
+                    showname={route.params.showname}
+                    episode={item}
+                    canFavorite={false}
+                  />
+                )}
+                renderSectionHeader={({ section: { title } }) => (
+                  <Text style={styles.seasonHeader}>{title}</Text>
+                )}
+              />
+              {/*route.params.favorites
                 .sort((lhs, rhs) => {
                   return lhs.code > rhs.code;
                 })
@@ -82,7 +103,7 @@ const FavoritesScreen = ({ navigation, route }) => {
                       canFavorite={false}
                     />
                   </View>
-                ))}
+                ))*/}
             </View>
           </ScrollView>
         )}

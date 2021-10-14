@@ -71,6 +71,21 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
 
+  seasonHeader: {
+    fontSize: 28,
+    paddingTop: 20,
+    paddingBottom: 5,
+    fontWeight: "bold",
+    ...Platform.select({
+      ios: {
+        paddingLeft: "2%",
+      },
+      default: {
+        paddingLeft: "20%",
+      },
+    }),
+  },
+
   showIconHighlight: {
     alignItems: "center",
     backgroundColor: "white",
@@ -149,4 +164,5 @@ const footerStyles = StyleSheet.create({
     justifyContent: "space-between",
   },
 });
+
 export { styles, footerStyles };

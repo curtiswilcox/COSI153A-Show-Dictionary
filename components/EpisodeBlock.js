@@ -42,18 +42,6 @@ const EpisodeView = ({
 
   return (
     <View style={styles.episodeBlockOuter}>
-      {seasonHeaderCallback(episode) && (
-        <Text
-          style={{
-            fontSize: 28,
-            paddingTop: 20,
-            paddingBottom: 5,
-            fontWeight: "bold",
-          }}
-        >
-          Season {episode.seasonNumber}
-        </Text>
-      )}
       <View style={styles.episodeBlockMiddle}>
         <View style={styles.episodeBlockInner}>
           <View

@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Button,
   Pressable,
-  // SafeAreaView,
   ScrollView,
   Text,
   TextInput,
@@ -22,6 +21,24 @@ const HomeScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    navigation.setOptions({
+    //   topBar: {
+    //     largeTitle: "Show Dictionary",
+    //   },
+      headerRight: () => (
+        <View>
+          <View style={styles.aboutButton}>
+            <Button
+              onPress={() => navigation.navigate("About", {})}
+              title="About"
+            />
+          </View>
+        </View>
+      ),
+    });
+  }, [navigation]);
+
+  useEffect(() => {
     async function getAllShows(options = {}) {
       try {
         const response = await fetch(
@@ -36,24 +53,6 @@ const HomeScreen = ({ navigation }) => {
     }
     getAllShows();
   }, []);
-
-  useEffect(() => {
-    navigation.setOptions({
-      topBar: {
-        largeTitle: "Show Dictionary",
-      },
-      headerRight: () => (
-        <View>
-          <View style={styles.aboutButton}>
-            <Button
-              onPress={() => navigation.navigate("About", {})}
-              title="About"
-            />
-          </View>
-        </View>
-      ),
-    });
-  }, [navigation]);
 
   return loading ? (
     <View style={{ flex: 1, alignContent: "center", justifyContent: "center" }}>

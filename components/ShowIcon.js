@@ -14,7 +14,11 @@ const ShowIcon = ({ show, callback }) => {
   const [loading, setLoading] = useState(true);
 
   return (
-    <Pressable accessibilityRole="button" onPress={callback} style={styles.showIconHighlight}>
+    <Pressable
+      accessibilityRole="button"
+      onPress={callback}
+      style={styles.showIconHighlight}
+    >
       <Image
         style={styles.showIcon}
         source={{ uri: show.url }}
