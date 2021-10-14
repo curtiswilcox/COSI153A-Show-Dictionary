@@ -1,33 +1,94 @@
-// MOVIE: https://www.dropbox.com/sh/fe5cpt5avuemgyf/AADGtr5tH3S7oMVYpHJuvV8-a?dl=0
+/* MOVIE (CPA 2):  */
 
-import React from 'react';
+import React from "react";
 
-import HomeScreen from './components/HomeScreen';
-import ShowInfoScreen from './components/ShowInfoScreen';
-import AboutScreen from './components/AboutScreen';
+import { Platform } from "react-native";
 
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import HomeScreen from "./components/HomeScreen";
+import ShowInfoScreen from "./components/ShowInfoScreen";
+import AboutScreen from "./components/AboutScreen";
+import FavoritesScreen from "./components/FavoritesScreen";
 
-// import AsyncStorage from '@react-native-async-storage/async-storage';
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 let Stack = createNativeStackNavigator();
 
 const ShowDictionaryApp = () => {
+  /*
+  const linking = {
+    prefixes: [
+
+    ],
+    config: {
+      screens: {
+        ShowInfo: {
+          path: '/:show',
+          parse: {
+            show: (show) => `${show.filename}`
+          },
+          // stringify: {
+          //   show: (show) =>
+          // }
+        },
+        About: 'about',
+      }
+    },
+  }
+  */
+
   return (
     <NavigationContainer>
+      {/* linking={linking} fallback={<Text>Loading...</Text>} */}
       <Stack.Navigator>
         <Stack.Screen
           name="Show Dictionary"
           component={HomeScreen}
-          // options={({ navigation, route }) => ({
-          //   headerTitle: (props) => (
-          //       <Text style={{fontWeight: 'bold'}}>Show Dictionary</Text>
-          //   ),
-          // })}
+          options={{
+            ...Platform.select({
+              ios: {
+                headerLargeTitle: true,
+              },
+            }),
+          }}
         />
-        {<Stack.Screen name="ShowInfo" component={ShowInfoScreen} />}
-        {<Stack.Screen name="About" component={AboutScreen} />}
+        <Stack.Screen
+          name="ShowInfo"
+          component={ShowInfoScreen}
+          options={({ route }) => ({
+            title: route.params.show.name,
+            headerBackTitle: 'Home',
+            ...Platform.select({
+              ios: {
+                headerLargeTitle: true,
+              },
+            }),
+          })}
+        />
+        <Stack.Screen
+          name="About"
+          component={AboutScreen}
+          options={{
+            headerBackTitle: 'Home',
+            ...Platform.select({
+              ios: {
+                headerLargeTitle: true,
+              },
+            }),
+          }}
+        />
+        <Stack.Screen
+          name="Favorites"
+          component={FavoritesScreen}
+          options={({ route }) => ({
+            title: `Favorite Episodes from ${route.params.show.name}`,
+            ...Platform.select({
+              ios: {
+                headerLargeTitle: true,
+              },
+            }),
+          })}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

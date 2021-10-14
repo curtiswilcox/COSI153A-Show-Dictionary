@@ -1,20 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-import { Image, Pressable } from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  Overlay,
+  Pressable,
+  View,
+} from "react-native";
 
-import { styles } from '../styles/styles';
+import { styles } from "../styles/styles";
 
-const ShowIcon = ({ show, callback }) => {
+const ShowIcon = ({ show, callback, canPress }) => {
   const [loading, setLoading] = useState(true);
-  // {loading ? <ActivityIndicator style={styles.showIcon} /> :
-  // }
-  /*onLoadEnd={setLoading(false)}*/
+
   return (
-    <Pressable onPress={() => callback()} style={styles.showIconHighlight}>
+    <Pressable
+      accessibilityRole={canPress ? "button" : "none"}
+      onPress={callback}
+      style={styles.showIcon}
+    >
       <Image
         style={styles.showIcon}
-        source={{ uri: show['url'] === undefined ? show['URL'] : show['url'] }}
+        source={{ uri: show.url }}
+        onLoad={() => setLoading(false)}
       />
+      {loading && (
+        <ActivityIndicator style={{ position: "absolute" }} size="large" />
+      )}
     </Pressable>
   );
 };

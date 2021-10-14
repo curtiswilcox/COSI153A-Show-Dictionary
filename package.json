@@ -8,21 +8,22 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "~1.15.0",
+    "@react-navigation/native": "*",
+    "@react-navigation/native-stack": "*",
+    "axios": "*",
+    "date-fns": "^2.25.0",
     "expo": "~42.0.1",
+    "expo-constants": "~11.0.2",
     "expo-status-bar": "~1.0.4",
     "react": "16.13.1",
     "react-dom": "16.13.1",
-    "react-native": "https://github.com/expo/react-native/archive/sdk-42.0.0.tar.gz",
-    "react-native-web": "~0.13.12",
-    "expo-constants": "~11.0.2",
     "react-loader-spinner": "*",
-    "react-native-screens": "~3.4.0",
-    "@react-navigation/native": "*",
-    "react-native-device-detection": "*",
-    "@react-navigation/native-stack": "*",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-42.0.0.tar.gz",
+    "react-native-device-detection": "^0.2.1",
     "react-native-safe-area-context": "3.2.0",
-    "axios": "*",
-    "@react-native-async-storage/async-storage": "~1.15.0"
+    "react-native-screens": "~3.4.0",
+    "react-native-web": "~0.13.12"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0"
