@@ -65,7 +65,6 @@ const HomeScreen = ({ navigation }) => {
 
   useEffect(() => {
     if (!searchText) {
-      // == '' || searchText == null || searchText == undefined) {
       setData(originalData);
       return;
     }

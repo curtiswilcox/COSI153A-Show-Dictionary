@@ -42,7 +42,7 @@ const ShowDictionaryApp = () => {
       {/* linking={linking} fallback={<Text>Loading...</Text>} */}
       <Stack.Navigator>
         <Stack.Screen
-          name="Show Dictionary"
+          name="Home"
           component={HomeScreen}
           options={{
             ...Platform.select({
@@ -57,7 +57,7 @@ const ShowDictionaryApp = () => {
           component={ShowInfoScreen}
           options={({ route }) => ({
             title: route.params.show.name,
-            headerBackTitle: 'Home',
+            // headerBackTitle: 'Home',
             ...Platform.select({
               ios: {
                 headerLargeTitle: true,

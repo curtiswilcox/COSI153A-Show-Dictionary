@@ -21,6 +21,7 @@ import ShowIcon from "./ShowIcon";
 import { styles } from "../styles/styles";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
+// import { BlurView, VibrancyView } from "@react-native-community/blur";
 
 const ShowInfoScreen = ({ navigation, route }) => {
   const [originalData, setOriginalData] = useState([]);
@@ -226,18 +227,13 @@ const ShowInfoScreen = ({ navigation, route }) => {
           sections={data}
           keyExtractor={(item, index) => item + index}
           stickySectionHeadersEnabled={false}
-          renderItem={
-            ({ item }) => (
-              // <View style={showingSeasons[item.seasonNumber - 1].showing && {height: 'auto'}}>
-              <EpisodeBlock
-                showname={route.params.show.filename}
-                episode={item}
-                canFavorite={true}
-              />
-              // </View>
-            )
-            // ) : null;
-          }
+          renderItem={({ item }) => (
+            <EpisodeBlock
+              showname={route.params.show.filename}
+              episode={item}
+              canFavorite={true}
+            />
+          )}
           renderSectionHeader={({ section: { title } }) => {
             const seasonType = route.params.show.typeOfSeasons;
             let seasonHeader =
@@ -245,18 +241,14 @@ const ShowInfoScreen = ({ navigation, route }) => {
             seasonHeader += ` ${title}`;
             const seasonTitles = route.params.show.seasonTitles;
             const seasonTitle = seasonTitles
-              ? seasonTitles[title]
+              ? seasonTitles[title] // not a bug, there are some shows with season titles for only some of the seasons
                 ? seasonTitles[title]
                 : ""
               : null;
             if (seasonTitle) {
               seasonHeader += `: ${seasonTitle}`;
             }
-            return (
-
-                <Text style={styles.seasonHeader}>{seasonHeader}</Text>
-
-            );
+            return <Text style={styles.seasonHeader}>{seasonHeader}</Text>;
           }}
           ListEmptyComponent={
             <Text
