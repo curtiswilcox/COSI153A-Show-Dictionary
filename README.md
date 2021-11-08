@@ -1,17 +1,42 @@
 # Show Dictionary
 ### Curtis Wilcox
 ### COSI 153A (Fall 2021): Tim Hickey
-### CPA 3
+### CPA 4
 
 ---
 
+### Requirements
+- For CPA4 you will continue to work on your app, fixing the issue identified in CPA3. You will also need to create a README.md file which describes your app, including
+  - a name for the app
+  - an elevator pitch
+  - screen shots
+  - developer notes (e.g. what technologies you are using, what packages your using, etc.)
+- create a narrated movie in which you demonstrate that
+  - your app meets all of the requirements (and highlight any that you haven't yet added)
+  - that your app runs on a mobile device (or on a phone simulator, not a web browser)
+  - that you can run your app using expo start on your own computer (not just on snack.expo.dev)
+- add some additional features to your app, including
+  - FlatLists or SectionLists
+  - Contexts
+  - Container components (that use the children prop)
+  - some components not yet covered in the class
+
 ### Video Link
-https://www.dropbox.com/s/r1pxsg8j8ywlwgt/cpa-2.MP4?dl=0
+
+
+### Elevator Pitch
+
+
+### Developer Notes
+
 
 ### Reflection
 - What you did well
-  - I think I gave a decent demonstration of this project over Zoom. I was able to demo it live using my iPhone, which I think made the experience better than simply showing a movie or using the web-based approach.
+  -
 - What you found challenging (if anything)
-  - I did not find anything challenging for this CPA.
+  -
 - What are the main features you want your app to have (when you finish it in December!)
-  - I would like, at a very high level, the user to be able to select a show that they want to look into and then be able to see information about the show, such as a description of it and also information on all of its episodes. The episodic information would include, but not necessarily be limited to, the title and a summary of the episode, as well as its original airdate, the person or people who wrote and directed it, and view the characters that appeared in certain episodes (not a full cast list, but some of the more "main" or memorable characters, for better ease of finding an episode that one may be trying to recall). Ideally, the user could also mark some episodes as "favorite" to come back to later. I suspect that more ideas will come up as we are shown more and more things in class that I can then incorporate into this app.
+  -
+
+
+### Screen Shots

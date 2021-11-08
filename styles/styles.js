@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     ...Platform.select({
       ios: {
-        paddingHorizontal: "2%",
+        paddingHorizontal: "4%",
         paddingVertical: 20,
       },
       default: {
@@ -120,7 +120,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     height: 50,
     paddingHorizontal: 20,
-    // width: Dimensions.get("window").width - 60
   },
 
   textShowDescription: {

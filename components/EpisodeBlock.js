@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import { Button, Pressable, Text, View } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 
+import { useValue } from "./Context";
+
 import { styles } from "../styles/styles";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -15,13 +17,9 @@ import { format } from "date-fns";
 //   es: "do 'de' MMMM yyyy",
 // };
 
-const EpisodeView = ({
-  showname,
-  episode,
-  seasonHeaderCallback,
-  canFavorite,
-}) => {
+const EpisodeView = ({ showname, episode, seasonHeaderCallback }) => {
   let [episodeIsFavorite, setEpisodeIsFavorite] = useState(episode.isFavorite);
+  // const { currentValue, setCurrentValue } = useValue();
 
   useEffect(() => {
     async function setFavorite() {
@@ -30,6 +28,8 @@ const EpisodeView = ({
         if (val !== null) {
           const isFavorite = JSON.parse(val);
           setEpisodeIsFavorite(isFavorite);
+          // setCurrentValue(isFavorite);
+
           episode.isFavorite = JSON.parse(isFavorite);
         }
       } catch (e) {
@@ -60,7 +60,13 @@ const EpisodeView = ({
               {episode.name}
             </Text>
           </View>
-          <View style={{ alignSelf: "center", paddingVertical: 10, paddingHorizontal: '2%' }}>
+          <View
+            style={{
+              alignSelf: "center",
+              paddingVertical: 10,
+              paddingHorizontal: "2%",
+            }}
+          >
             {episode.writer && (
               <Text style={{ fontSize: 17, textAlign: "center" }}>
                 {episode.writer}
@@ -84,11 +90,8 @@ const EpisodeView = ({
             }}
           >
             <Pressable
-              accessibilityRole={canFavorite ? "button" : "image"}
+              accessibilityRole={"button"}
               onPress={() => {
-                if (!canFavorite) {
-                  return;
-                }
                 AsyncStorage.setItem(
                   `@${showname}-${episode.code}`,
                   JSON.stringify(!episode.isFavorite)
@@ -100,7 +103,7 @@ const EpisodeView = ({
               <Icon
                 name={episode.isFavorite ? "star" : "star-o"}
                 size={28}
-                color={canFavorite ? "#24A0ED" : "black"}
+                color="#24A0ED"
               />
             </Pressable>
           </View>
