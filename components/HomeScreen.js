@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Button,
   Dimensions,
   FlatList,
@@ -16,7 +15,7 @@ import {
 import Footer from "./Footer";
 import LoaderScreen from "./LoaderScreen";
 import ShowIcon from "./ShowIcon";
-import { useValue } from "./Context";
+import ValueProvider, { useValue } from "./Context";
 
 import { styles, footerStyles } from "../styles/styles";
 
@@ -96,19 +95,23 @@ const HomeScreen = ({ navigation }) => {
         data={data}
         numColumns={Platform.OS == "ios" || Platform.OS == "android" ? 2 : 7}
         keyExtractor={(item) => item.filename}
-        renderItem={({ item }) => (
-          <View style={{ padding: 15 }}>
-            <ShowIcon
-              show={item}
-              callback={() => {
-                navigation.navigate("ShowInfo", {
-                  show: item,
-                });
-              }}
-              canPress={true}
-            />
-          </View>
-        )}
+        renderItem={({ item }) => {
+          /*<ValueProvider value={true}>*/
+          /*</ValueProvider>*/
+          return (
+            <View style={{ padding: 15 }}>
+              <ShowIcon
+                show={item}
+                callback={() => {
+                  navigation.navigate("ShowInfo", {
+                    show: item,
+                  });
+                }}
+                canPress={true}
+              />
+            </View>
+          );
+        }}
         ListHeaderComponent={
           <>
             <View style={styles.primaryView}>

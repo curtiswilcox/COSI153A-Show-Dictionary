@@ -80,18 +80,23 @@ const styles = StyleSheet.create({
   },
 
   seasonHeader: {
-    fontSize: 28,
     paddingTop: 10,
     paddingBottom: 10,
-    fontWeight: "bold",
+    justifyContent: 'space-between',
+    flexDirection: 'row',
     ...Platform.select({
       ios: {
-        paddingLeft: "5%",
+        paddingHorizontal: "5%",
       },
       default: {
-        paddingLeft: "20%",
+        paddingHorizontal: "20%",
       },
     }),
+  },
+
+  seasonHeaderText: {
+    fontSize: 28,
+    fontWeight: "bold",
   },
 
   showIcon: {

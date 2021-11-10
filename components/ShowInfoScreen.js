@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 
 import {
-  ActivityIndicator,
   Button,
   Image,
   LayoutAnimation,
@@ -11,6 +10,7 @@ import {
   SectionList,
   Text,
   TextInput,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 
@@ -19,6 +19,8 @@ import Footer from "./Footer";
 import LoaderView from "./LoaderScreen";
 import ShowIcon from "./ShowIcon";
 import ValueProvider, { useValue } from "./Context";
+
+import Icon from "react-native-vector-icons/FontAwesome";
 
 import { styles } from "../styles/styles";
 
@@ -29,7 +31,7 @@ const ShowInfoScreen = ({ navigation, route }) => {
   const [data, setData] = useState([]);
   const [searchText, onChangeText] = useState(null);
   const [showFavorites, setShowFavorites] = useState(false);
-  // const [showingSeasons, setShowingSeasons] = useState([]);
+  const [showingSeasons, setShowingSeasons] = useState(new Set());
 
   const { currentValue: loading, setCurrentValue: setLoading } = useValue();
 
@@ -42,14 +44,19 @@ const ShowInfoScreen = ({ navigation, route }) => {
             <Button
               onPress={() => {
                 setShowFavorites(!showFavorites);
+                LayoutAnimation.configureNext(
+                  LayoutAnimation.Presets.easeInEaseOut
+                );
                 if (!currentlyShowingFaves) {
                   setData(
                     splitBySeasons(
-                      originalData.filter((episode) => episode.isFavorite)
+                      filterOnSearchText(originalData).filter(
+                        (episode) => episode.isFavorite
+                      )
                     )
                   );
                 } else {
-                  setData(splitBySeasons(originalData));
+                  setData(splitBySeasons(filterOnSearchText(originalData)));
                 }
               }}
               title={currentlyShowingFaves ? "All" : "Favorites"}
@@ -61,18 +68,17 @@ const ShowInfoScreen = ({ navigation, route }) => {
   }, [loading, showFavorites]);
 
   useEffect(() => {
-    const filteredSplit = splitBySeasons(
-      originalData.filter((episode) => {
-        if (!searchText) {
-          return true;
-        }
-
-        return episode.filterTerms.some((term) =>
-          term.includes(searchText.toLowerCase())
-        );
-      })
-    );
-    setData(filteredSplit);
+    if (showFavorites) {
+      setData(
+        splitBySeasons(
+          filterOnSearchText(originalData).filter(
+            (episode) => episode.isFavorite
+          )
+        )
+      );
+    } else {
+      setData(splitBySeasons(filterOnSearchText(originalData)));
+    }
   }, [searchText]);
 
   useEffect(() => {
@@ -82,6 +88,9 @@ const ShowInfoScreen = ({ navigation, route }) => {
       setOriginalData(originalData);
       setData(seasonSplitData);
       setLoading(false);
+      setShowingSeasons(
+        new Set(originalData.map((episode) => parseInt(episode.seasonNumber)))
+      );
     }
     dealWithData();
   }, []);
@@ -158,15 +167,34 @@ const ShowInfoScreen = ({ navigation, route }) => {
     return seasonSectionStructure;
   };
 
+  const filterOnSearchText = (episodes) => {
+    return episodes.filter((episode) => {
+      if (!searchText) {
+        return true;
+      }
+
+      return episode.filterTerms.some((term) =>
+        term.includes(searchText.toLowerCase())
+      );
+    });
+  };
+
   return (
     <LoaderView>
       <SectionList
         sections={data}
         keyExtractor={(item, index) => item + index}
         stickySectionHeadersEnabled={false}
-        renderItem={({ item }) => (
-          <EpisodeBlock showname={route.params.show.filename} episode={item} />
-        )}
+        renderItem={({ item }) => {
+          return showingSeasons.has(item.seasonNumber) ? (
+            <EpisodeBlock
+              showname={route.params.show.filename}
+              episode={item}
+            />
+          ) : (
+            null
+          );
+        }}
         renderSectionHeader={({ section: { title } }) => {
           const seasonType = route.params.show.typeOfSeasons;
           let seasonHeader =
@@ -181,7 +209,36 @@ const ShowInfoScreen = ({ navigation, route }) => {
           if (seasonTitle) {
             seasonHeader += `: ${seasonTitle}`;
           }
-          return <Text style={styles.seasonHeader}>{seasonHeader}</Text>;
+          return (
+            <TouchableWithoutFeedback
+              style={{}}
+              onPress={() => {
+                let seasons = new Set(showingSeasons);
+                if (seasons.has(title)) {
+                  seasons.delete(title);
+                } else {
+                  seasons.add(title);
+                }
+                LayoutAnimation.configureNext(
+                  LayoutAnimation.Presets.easeInEaseOut
+                );
+                setShowingSeasons(seasons);
+                LayoutAnimation.configureNext(
+                  LayoutAnimation.Presets.easeInEaseOut
+                );
+              }}
+            >
+              <View style={styles.seasonHeader}>
+                <Text style={styles.seasonHeaderText}>{seasonHeader}</Text>
+                <Icon
+                  name="chevron-down"
+                  size={28}
+                  color="#24A0ED"
+                  style={{transform: [{rotate: showingSeasons.has(title) ? "0deg" : "270deg"}]}}
+                />
+              </View>
+            </TouchableWithoutFeedback>
+          );
         }}
         ListEmptyComponent={
           <Text
