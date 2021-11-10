@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 
 import {
-  ActivityIndicator,
   Button,
   Image,
   LayoutAnimation,
@@ -11,58 +10,75 @@ import {
   SectionList,
   Text,
   TextInput,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 
 import EpisodeBlock from "./EpisodeBlock";
 import Footer from "./Footer";
+import LoaderView from "./LoaderScreen";
 import ShowIcon from "./ShowIcon";
+import ValueProvider, { useValue } from "./Context";
+
+import Icon from "react-native-vector-icons/FontAwesome";
 
 import { styles } from "../styles/styles";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
-// import { BlurView, VibrancyView } from "@react-native-community/blur";
 
 const ShowInfoScreen = ({ navigation, route }) => {
   const [originalData, setOriginalData] = useState([]);
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [searchText, onChangeText] = useState(null);
-  // const [showingSeasons, setShowingSeasons] = useState([]);
+  const [showFavorites, setShowFavorites] = useState(false);
+  const [showingSeasons, setShowingSeasons] = useState(new Set());
+
+  const { currentValue: loading, setCurrentValue: setLoading } = useValue();
 
   useEffect(() => {
     navigation.setOptions({
-      headerRight: () => (
-        <View style={styles.aboutButton}>
-          <Button
-            onPress={() =>
-              navigation.navigate("Favorites", {
-                show: route.params.show,
-                favorites: splitBySeasons(
-                  originalData.filter((episode) => episode.isFavorite)
-                ),
-              })
-            }
-            title="Favorites"
-          />
-        </View>
-      ),
+      headerRight: () => {
+        let currentlyShowingFaves = showFavorites;
+        return (
+          <View style={styles.aboutButton}>
+            <Button
+              onPress={() => {
+                setShowFavorites(!showFavorites);
+                LayoutAnimation.configureNext(
+                  LayoutAnimation.Presets.easeInEaseOut
+                );
+                if (!currentlyShowingFaves) {
+                  setData(
+                    splitBySeasons(
+                      filterOnSearchText(originalData).filter(
+                        (episode) => episode.isFavorite
+                      )
+                    )
+                  );
+                } else {
+                  setData(splitBySeasons(filterOnSearchText(originalData)));
+                }
+              }}
+              title={currentlyShowingFaves ? "All" : "Favorites"}
+            />
+          </View>
+        );
+      },
     });
-  }, [data]);
+  }, [loading, showFavorites]);
 
   useEffect(() => {
-    const filteredSplit = splitBySeasons(
-      originalData.filter((episode) => {
-        if (!searchText) {
-          return true;
-        }
-
-        return episode.filterTerms.some((term) =>
-          term.includes(searchText.toLowerCase())
-        );
-      })
-    );
-    setData(filteredSplit);
+    if (showFavorites) {
+      setData(
+        splitBySeasons(
+          filterOnSearchText(originalData).filter(
+            (episode) => episode.isFavorite
+          )
+        )
+      );
+    } else {
+      setData(splitBySeasons(filterOnSearchText(originalData)));
+    }
   }, [searchText]);
 
   useEffect(() => {
@@ -71,17 +87,10 @@ const ShowInfoScreen = ({ navigation, route }) => {
       const seasonSplitData = splitBySeasons(originalData);
       setOriginalData(originalData);
       setData(seasonSplitData);
-      // setShowingSeasons(
-      //   [...new Set(originalData.map((episode) => episode.seasonNumber))].map(
-      //     (seasonNumber) => {
-      //       return {
-      //         number: seasonNumber,
-      //         showing: true,
-      //       };
-      //     }
-      //   )
-      // );
       setLoading(false);
+      setShowingSeasons(
+        new Set(originalData.map((episode) => parseInt(episode.seasonNumber)))
+      );
     }
     dealWithData();
   }, []);
@@ -158,155 +167,140 @@ const ShowInfoScreen = ({ navigation, route }) => {
     return seasonSectionStructure;
   };
 
-  /*
-  useEffect(() => {
-    async function getData() {
-      try {
-        const filename = route.params.show.filename;
-        const response = await fetch(
-          `https://www.cs.brandeis.edu/~curtiswilcox/show-dictionary/${filename}.json`
-        );
-
-        const data = await response.json();
-
-        data.forEach(async (episode) => {
-          episode.isFavorite = false;
-          try {
-            const isFavorite = await AsyncStorage.getItem(
-              `@${filename}-${episode.code}`
-            );
-            episode.isFavorite =
-              isFavorite !== null ? JSON.parse(isFavorite) : false;
-          } catch (e) {
-            episode.isFavorite = false;
-            console.log(`getData error: ${e}`);
-          }
-        });
-
-        setData(data);
-      } catch (err) {
-        setData([]);
+  const filterOnSearchText = (episodes) => {
+    return episodes.filter((episode) => {
+      if (!searchText) {
+        return true;
       }
-      setLoading(false);
-    }
 
-    // https://stackoverflow.com/questions/46504660/refresh-previous-screen-on-goback
-    // const willFocusSubscription = navigation.addListener("focus", () => {
-    //   if (data.length == 0) {
-    //     getData();
-    //   } else {
-    //     data.forEach(async (episode) => {
-    //       try {
-    //         const isFavorite = await AsyncStorage.getItem(
-    //           `@${route.params.show.filename}-${episode.code}`
-    //         );
-    //         console.log(isFavorite)
-    //         episode.isFavorite =
-    //           isFavorite !== null ? JSON.parse(isFavorite) : false;
-    //       } catch (e) {
-    //         episode.isFavorite = false;
-    //         console.log(`willFocusSubscription error: ${e}`)
-    //       }
-    //       setData(data);
-    //     });
-    //   }
-    // });
+      return episode.filterTerms.some((term) =>
+        term.includes(searchText.toLowerCase())
+      );
+    });
+  };
 
-    // return willFocusSubscription;
-    getData();
-  }, []);
-*/
-  return loading ? (
-    <View style={{ flex: 1, alignContent: "center", justifyContent: "center" }}>
-      <ActivityIndicator size="large" style={{ flex: 1 }} />
-    </View>
-  ) : (
-    <View style={{ flex: 1 }}>
-      <View style={{ flex: 1 }}>
-        <SectionList
-          sections={data}
-          keyExtractor={(item, index) => item + index}
-          stickySectionHeadersEnabled={false}
-          renderItem={({ item }) => (
+  return (
+    <LoaderView>
+      <SectionList
+        sections={data}
+        keyExtractor={(item, index) => item + index}
+        stickySectionHeadersEnabled={false}
+        renderItem={({ item }) => {
+          return showingSeasons.has(item.seasonNumber) ? (
             <EpisodeBlock
               showname={route.params.show.filename}
               episode={item}
-              canFavorite={true}
             />
-          )}
-          renderSectionHeader={({ section: { title } }) => {
-            const seasonType = route.params.show.typeOfSeasons;
-            let seasonHeader =
-              seasonType.charAt(0).toUpperCase() + seasonType.slice(1);
-            seasonHeader += ` ${title}`;
-            const seasonTitles = route.params.show.seasonTitles;
-            const seasonTitle = seasonTitles
-              ? seasonTitles[title] // not a bug, there are some shows with season titles for only some of the seasons
-                ? seasonTitles[title]
-                : ""
-              : null;
-            if (seasonTitle) {
-              seasonHeader += `: ${seasonTitle}`;
-            }
-            return <Text style={styles.seasonHeader}>{seasonHeader}</Text>;
-          }}
-          ListEmptyComponent={
-            <Text
-              style={{
-                justifyContent: "space-around",
-                fontSize: 28,
-                fontWeight: "bold",
-                textAlign: "center",
-                paddingTop: 20,
+          ) : (
+            null
+          );
+        }}
+        renderSectionHeader={({ section: { title } }) => {
+          const seasonType = route.params.show.typeOfSeasons;
+          let seasonHeader =
+            seasonType.charAt(0).toUpperCase() + seasonType.slice(1);
+          seasonHeader += ` ${title}`;
+          const seasonTitles = route.params.show.seasonTitles;
+          const seasonTitle = seasonTitles
+            ? seasonTitles[title] // not a bug, there are some shows with season titles for only some of the seasons
+              ? seasonTitles[title]
+              : ""
+            : null;
+          if (seasonTitle) {
+            seasonHeader += `: ${seasonTitle}`;
+          }
+          return (
+            <TouchableWithoutFeedback
+              style={{}}
+              onPress={() => {
+                let seasons = new Set(showingSeasons);
+                if (seasons.has(title)) {
+                  seasons.delete(title);
+                } else {
+                  seasons.add(title);
+                }
+                LayoutAnimation.configureNext(
+                  LayoutAnimation.Presets.easeInEaseOut
+                );
+                setShowingSeasons(seasons);
+                LayoutAnimation.configureNext(
+                  LayoutAnimation.Presets.easeInEaseOut
+                );
               }}
             >
-              {searchText
-                ? "There are no episodes that match the inputted search text."
-                : "There are no episodes to see."}
-            </Text>
-          }
-          ListHeaderComponent={
-            <>
-              <View style={styles.primaryView}>
-                <TextInput
-                  style={styles.textInput}
-                  onChangeText={onChangeText}
-                  placeholder="Search for an episode"
-                  clearButtonMode="always"
+              <View style={styles.seasonHeader}>
+                <Text style={styles.seasonHeaderText}>{seasonHeader}</Text>
+                <Icon
+                  name="chevron-down"
+                  size={28}
+                  color="#24A0ED"
+                  style={{transform: [{rotate: showingSeasons.has(title) ? "0deg" : "270deg"}]}}
                 />
               </View>
-              <View
-                style={{
-                  ...Platform.select({
-                    ios: {
-                      ...styles.primaryView,
-                      paddingTop: 0,
-                      paddingHorizontal: "1%",
-                    },
-                    default: {
-                      ...styles.primaryView,
-                      paddingHorizontal: "19%",
-                    },
-                  }),
-                }}
-              >
-                <View style={styles.info}>
-                  <ShowIcon
-                    show={route.params.show}
-                    callback={() => {}}
-                    canPress={false}
-                  />
-                  <Text style={styles.textShowDescription}>
-                    {route.params.show.description}
-                  </Text>
-                </View>
+            </TouchableWithoutFeedback>
+          );
+        }}
+        ListEmptyComponent={
+          <Text
+            style={{
+              justifyContent: "space-around",
+              fontSize: 28,
+              fontWeight: "bold",
+              textAlign: "center",
+              paddingTop: 20,
+            }}
+          >
+            {searchText
+              ? "There are no episodes that match the given search text."
+              : "There are no episodes to see."}
+          </Text>
+        }
+        ListHeaderComponent={
+          <>
+            <View style={styles.primaryView}>
+              <TextInput
+                style={styles.textInput}
+                onChangeText={onChangeText}
+                placeholder="Search for an episode"
+                clearButtonMode="always"
+              />
+            </View>
+            <View
+              style={{
+                ...Platform.select({
+                  ios: {
+                    ...styles.primaryView,
+                    paddingTop: 0,
+                    paddingHorizontal: "1%",
+                  },
+                  default: {
+                    ...styles.primaryView,
+                    paddingHorizontal: "19%",
+                  },
+                }),
+              }}
+            >
+              <View style={styles.info}>
+                <ShowIcon
+                  show={route.params.show}
+                  callback={() => {}}
+                  canPress={false}
+                />
+                <Text style={styles.textShowDescription}>
+                  {route.params.show.description}
+                </Text>
               </View>
-            </>
-          }
-        />
-      </View>
-      <Footer />
-    </View>
+            </View>
+          </>
+        }
+        ListFooterComponent={<Footer />}
+        ListFooterComponentStyle={{
+          flex: 1,
+          justifyContent: "flex-end",
+          alignSelf: "auto",
+        }}
+      />
+    </LoaderView>
   );
 };
 

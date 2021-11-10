@@ -1,5 +1,3 @@
-/* MOVIE (CPA 2):  */
-
 import React from "react";
 
 import { Platform } from "react-native";
@@ -7,7 +5,7 @@ import { Platform } from "react-native";
 import HomeScreen from "./components/HomeScreen";
 import ShowInfoScreen from "./components/ShowInfoScreen";
 import AboutScreen from "./components/AboutScreen";
-import FavoritesScreen from "./components/FavoritesScreen";
+import ValueProvider from "./components/Context";
 
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -36,14 +34,13 @@ const ShowDictionaryApp = () => {
     },
   }
   */
-
   return (
     <NavigationContainer>
       {/* linking={linking} fallback={<Text>Loading...</Text>} */}
       <Stack.Navigator>
         <Stack.Screen
           name="Home"
-          component={HomeScreen}
+          component={HomeScreenLoader}
           options={{
             ...Platform.select({
               ios: {
@@ -54,7 +51,7 @@ const ShowDictionaryApp = () => {
         />
         <Stack.Screen
           name="ShowInfo"
-          component={ShowInfoScreen}
+          component={ShowInfoScreenLoader}
           options={({ route }) => ({
             title: route.params.show.name,
             // headerBackTitle: 'Home',
@@ -69,7 +66,7 @@ const ShowDictionaryApp = () => {
           name="About"
           component={AboutScreen}
           options={{
-            headerBackTitle: 'Home',
+            headerBackTitle: "Home",
             ...Platform.select({
               ios: {
                 headerLargeTitle: true,
@@ -77,20 +74,24 @@ const ShowDictionaryApp = () => {
             }),
           }}
         />
-        <Stack.Screen
-          name="Favorites"
-          component={FavoritesScreen}
-          options={({ route }) => ({
-            title: `Favorite Episodes from ${route.params.show.name}`,
-            ...Platform.select({
-              ios: {
-                headerLargeTitle: true,
-              },
-            }),
-          })}
-        />
       </Stack.Navigator>
     </NavigationContainer>
+  );
+};
+
+const HomeScreenLoader = ({ navigation }) => {
+  return (
+    <ValueProvider value={true}>
+      <HomeScreen navigation={navigation} />
+    </ValueProvider>
+  );
+};
+
+const ShowInfoScreenLoader = ({ navigation, route }) => {
+  return (
+    <ValueProvider value={true}>
+      <ShowInfoScreen navigation={navigation} route={route} />
+    </ValueProvider>
   );
 };
 

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Button,
   Dimensions,
   FlatList,
   Platform,
   Pressable,
+  SafeAreaView,
   ScrollView,
   Text,
   TextInput,
@@ -13,7 +13,9 @@ import {
 } from "react-native";
 
 import Footer from "./Footer";
+import LoaderScreen from "./LoaderScreen";
 import ShowIcon from "./ShowIcon";
+import ValueProvider, { useValue } from "./Context";
 
 import { styles, footerStyles } from "../styles/styles";
 
@@ -21,7 +23,7 @@ const HomeScreen = ({ navigation }) => {
   const [searchText, onChangeText] = useState(null);
   const [originalData, setOriginalData] = useState([]);
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { currentValue: loading, setCurrentValue: setLoading } = useValue();
 
   useEffect(() => {
     navigation.setOptions({
@@ -75,22 +77,28 @@ const HomeScreen = ({ navigation }) => {
     );
   }, [searchText]);
 
-  return loading ? (
-    <View style={{ flex: 1, alignContent: "center", justifyContent: "center" }}>
-      <ActivityIndicator size="large" />
-    </View>
-  ) : (
-    <View style={{ flex: 1 }}>
-      <View style={{ flex: 1 }}>
-        <FlatList
-          contentContainerStyle={{
-            alignSelf: "center",
-            justifyContent: "space-between",
-          }}
-          data={data}
-          numColumns={Platform.OS == "ios" || Platform.OS == "android" ? 2 : 7}
-          keyExtractor={(item) => item.filename}
-          renderItem={({ item }) => (
+  return (
+    <LoaderScreen>
+      <FlatList
+        contentContainerStyle={{ flexGrow: 1 }}
+        columnWrapperStyle={{
+          paddingHorizontal: "5%",
+          ...Platform.select({
+            ios: {
+              justifyContent: "space-between",
+            },
+            default: {
+              alignSelf: "center",
+            },
+          }),
+        }}
+        data={data}
+        numColumns={Platform.OS == "ios" || Platform.OS == "android" ? 2 : 7}
+        keyExtractor={(item) => item.filename}
+        renderItem={({ item }) => {
+          /*<ValueProvider value={true}>*/
+          /*</ValueProvider>*/
+          return (
             <View style={{ padding: 15 }}>
               <ShowIcon
                 show={item}
@@ -102,73 +110,30 @@ const HomeScreen = ({ navigation }) => {
                 canPress={true}
               />
             </View>
-          )}
-          ListHeaderComponent={
-            <>
-              <View style={styles.primaryView}>
-                <TextInput
-                  style={styles.textInput}
-                  onChangeText={onChangeText}
-                  placeholder="Enter show name"
-                  clearButtonMode="always"
-                />
-              </View>
-            </>
-          }
-        />
-      </View>
-      <Footer />
-    </View>
+          );
+        }}
+        ListHeaderComponent={
+          <>
+            <View style={styles.primaryView}>
+              <TextInput
+                style={styles.textInput}
+                onChangeText={onChangeText}
+                placeholder="Enter show name"
+                clearButtonMode="always"
+              />
+            </View>
+          </>
+        }
+        ListFooterComponent={<Footer />}
+        ListFooterComponentStyle={{
+          padding: 0,
+          flex: 1,
+          justifyContent: "flex-end",
+          alignSelf: "auto",
+        }}
+      />
+    </LoaderScreen>
   );
 };
 
 export default HomeScreen;
-
-/*
-<ScrollView>
-  <View style={styles.primaryView}>
-    <TextInput
-      style={styles.textInput}
-      onChangeText={onChangeText}
-      placeholder="Enter show name"
-      clearButtonMode="always"
-    />
-  </View>
-  <View style={styles.grid}>
-    {Object.keys(data)
-      .sort((lhs, rhs) => {
-        const lhsSortName = data[lhs].sortName.toLowerCase();
-        const rhsSortName = data[rhs].sortName.toLowerCase();
-
-        return lhsSortName > rhsSortName;
-      })
-      .filter((showname) => {
-        const text = searchText == null ? "" : searchText.toLowerCase();
-        const sortName = showname.toLowerCase();
-        const shownameProper = data[showname].name.toLowerCase();
-        return (
-          text == "" ||
-          showname.includes(text) ||
-          sortName.includes(text) ||
-          shownameProper.includes(text)
-        );
-      })
-      .map((showname) => (
-        <View style={{ padding: 10 }} key={data[showname].filename}>
-          <ShowIcon
-            show={data[showname]}
-            callback={() => {
-              navigation.navigate("ShowInfo", {
-                show: data[showname],
-              });
-            }}
-          />
-        </View>
-      ))}
-    <Text style={{ flexGrow: 1 }}></Text>
-    {/* The above line (with the `Text`) is a gross hack to align
-the last line of the grid to the left, while still maintaining the
-proper amount of space at the start and end of each row }*/
-/*</View>
-</ScrollView>
-*/

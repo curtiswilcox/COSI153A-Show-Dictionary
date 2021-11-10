@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     ...Platform.select({
       ios: {
-        paddingHorizontal: "2%",
+        paddingHorizontal: "4%",
         paddingVertical: 20,
       },
       default: {
@@ -80,18 +80,23 @@ const styles = StyleSheet.create({
   },
 
   seasonHeader: {
-    fontSize: 28,
     paddingTop: 10,
     paddingBottom: 10,
-    fontWeight: "bold",
+    justifyContent: 'space-between',
+    flexDirection: 'row',
     ...Platform.select({
       ios: {
-        paddingLeft: "5%",
+        paddingHorizontal: "5%",
       },
       default: {
-        paddingLeft: "20%",
+        paddingHorizontal: "20%",
       },
     }),
+  },
+
+  seasonHeaderText: {
+    fontSize: 28,
+    fontWeight: "bold",
   },
 
   showIcon: {
@@ -120,7 +125,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     height: 50,
     paddingHorizontal: 20,
-    // width: Dimensions.get("window").width - 60
   },
 
   textShowDescription: {
