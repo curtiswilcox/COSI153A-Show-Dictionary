@@ -1,12 +1,15 @@
 # Show Dictionary
 ### Curtis Wilcox
 ### COSI 153A (Fall 2021): Tim Hickey
-### CPA 4
+### CPA 5
 
 ---
 
 ### Video Link
-https://www.dropbox.com/s/91q20j1ut41xwcj/cpa-4.MP4?dl=0
+https://www.dropbox.com/s/qzp3kg8q6q4ag55/cpa-5.MP4?dl=0
+
+### Note
+I apologize for the rambling in the video. I was trying to go down the list that was emailed out and was a little scattered! :) Nothing was removed since CPA4, so all requirements are still met.
 
 
 ### Elevator Pitch
